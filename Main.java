@@ -1,10 +1,16 @@
+package w9;
+
+
 import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.IOException;
 
 
 public class Main {
 
     static Ticket[] ticketInfoArray = new Ticket[52]; //Creating static array type Ticket of size 52
     static int ticketSoldCount = 0;
+    static int totTicketCount = 0;
 
     public static void main(String[] args) {
         System.out.println("Welcome to the Plane Management application");
@@ -247,24 +253,28 @@ public class Main {
             Person personTempObj = new Person(name, surname, email); //Creating Object from Person class.
             Ticket ticketTempObj = new Ticket(seat_row, seat_col, seat_price, personTempObj);
 
-            for(int i=0;i<ticketInfoArray.length;i++){
-                if(ticketInfoArray[i]==null){
-                    ticketInfoArray[i]=ticketTempObj;
+            for (int i = 0; i < ticketInfoArray.length; i++)
+                if (totTicketCount < 52) {
+                    ticketInfoArray[totTicketCount] = ticketTempObj;
+                    break;
+                } else if (ticketInfoArray[i] == null) {
+                    ticketInfoArray[i] = ticketTempObj;
                     break;
                 }
-            }
+            totTicketCount++;
+            Ticket.save();
             ticketSoldCount++;
             System.out.println("Seat is sold to you");
-            /*
-            for (int i = 0; i < ticketInfoArray.length; i++) {
-                Ticket ticketTempObj2 = ticketInfoArray[i];  //Creating Ticket class object and assigning ticketInfoArray value
-                if (ticketTempObj2 != null) {
-             */
+/* totTicketCount will get the total number of tickets sold for the session which
+increments only after a ticket bought and doesn't decrement ever,The 'if and elif' used
+here is used to possibly save resources, if the totTickerCount<52 the data will be
+assigned immediately instead of how its done later. That elif is used to possibly
+avoid using a sorting algorithm which negates confusion when cancelling tickets after
+max load(52) is used*/
         } else {
             System.out.println("Seat is Already sold");
         }
     }
-
     public static void cancel_seat(int[][] seating) { //cancel seating method
         int seat_col = 0;
         boolean condition = true;
@@ -302,7 +312,6 @@ public class Main {
             System.out.println("Seat was Already Available");
         }
     }
-
     public static void find_first_available(int[][] seating) {
         String row; //Double for loop to traverse row and column ,
         for (int i = 0; i < seating.length; i++) {
@@ -315,7 +324,6 @@ public class Main {
             }
         }
     }
-
     public static void seating_plan(int[][] seating) { //Seating plan is printed
         for (int[] ROW : seating) {
             for (int COL : ROW) {
@@ -329,6 +337,8 @@ public class Main {
         }
     }
 
+
+
     public static void print_tickets_info() {
         int price = 0;
         //Creating Ticket class object and assigning ticketInfoArray value
@@ -338,9 +348,14 @@ public class Main {
                 ticketTempObj2.printTicketInfo();
             }
         }
-        System.out.println("\n\t\tNumber of tickets sold :" + ticketSoldCount+ " \nTotal price of Tickets sold during session: " + price);
+        System.out.println("\n\t\tNumber of tickets sold :" + ticketSoldCount + " \nTotal price of Tickets sold during session: " + price);
     }
 
+
+    /* This method prompts user input for seat_row and column, if its already booked will print the
+    ticket and person information of the corresponding seat.
+    @params integer jagged array seating
+    NO return */
     public static void search_ticket(int[][] seating) {
         int seat_row_num = 0;
         boolean condition = true;
@@ -366,18 +381,17 @@ public class Main {
                     }
                 }
             }
-        }else{
+        } else {
             System.out.println("Seat is available\n");
         }
     }
-
 }
 
 class Ticket {
-    private final String row;
+    private String row;
 
-    private final int seat;
-    private final int price;
+    private int seat;
+    private int price;
 
     private final Person personOBJ;
 
@@ -385,51 +399,128 @@ class Ticket {
         return row;
     }
 
-    public int getSeat(){
+    public int getSeat() {
         return seat;
     }
+
     public int getPrice() {
         return price;
     }
 
-    Ticket(String row,int seat, int price , Person personOBJ){
-        this.row=row;
-        this.seat=seat;
-        this.price=price;
-        this.personOBJ=personOBJ;
+    public void setRow(String row) {
+        this.row = row;
+    }
+
+    public void setSeat(int seat) {
+        this.seat = seat;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public
+    //Constructor of Ticket Class
+    Ticket(String row, int seat, int price, Person personOBJ) {
+        this.row = row;
+        this.seat = seat;
+        this.price = price;
+        this.personOBJ = personOBJ;
 
     }
-    public void printTicketInfo(){
-        System.out.println(row+seat+" Price is " + price);
+
+
+    /* This method when called prints all the Ticket information; row,seat,price, name surname email from person clas
+    no return values only prints */
+    public void printTicketInfo() {
+        System.out.println("-".repeat(20) + "\n" + row + seat + " Price is " + price);
         personOBJ.printPersonInfo();
+    }
+
+
+    /* This method is only accessed by save method to write down row,seat,price and all person class variables as well
+    through personOBJ.
+    Returns writable information as a String */
+    public String fileTicketInfo() {
+        return row + seat + " Seat Priced at " + price + personOBJ.filePersonInfo();
+    }
+
+
+    /* This method obtains information from the ticketInfoArray and assigns to ticketTempObj3
+    and writes that information into a file.
+    no return values only writes into file. */
+    public static void save() {
+        for (Ticket ticketTempObj3 : Main.ticketInfoArray) {
+            if (ticketTempObj3!=null){
+                String fileName=ticketTempObj3.getRow()+ticketTempObj3.getSeat()+".txt";
+                try (FileWriter writer = new FileWriter(fileName)) { // Using try-with-resources to automatically close the FileWriter
+                    // Writing ticket information to the file using the printTicketInfo method
+
+                    String fileInfo= ticketTempObj3.fileTicketInfo();
+                    writer.write(fileInfo);
+                    System.out.println("Ticket information saved to " + fileName);
+                } catch (IOException e) {
+                    System.out.println("An error occurred while saving the ticket information to " + fileName);
+                }
+            }
+        }
     }
 }
 
-class Person {
-    private final String name;
-    private final String surname;
-    private final String email;
+class Person {      //Privatising instance variables to enforce encapsulation\To hide sensitive personal details
+    private String name;
+    private String surname;
+    private String email;
 
-    // Constructor
+
+    // Constructor of Person Class
     Person(String name, String surname, String email) {
         this.name = name;
         this.surname = surname;
         this.email = email;
     }
 
-    // Method to print information
+
+    /*
+    This method prints the name,surname,email,
+    Easier to use as instance variable are private and would've had to use to getters for every variable otherwise
+    no return values only prints.
+     */
     public void printPersonInfo() {
         System.out.println("These are the confirmed Details for above booked seat");
         System.out.println("Name: " + name);
         System.out.println("Surname: " + surname);
-        System.out.println("Email: " + email +"/n");
+        System.out.println("Email: " + email + "\n");
+    }
+
+
+    /*
+    This method is only accessed by FileWriter
+    returns the values to be printed inside the saved documents
+     */
+    public String filePersonInfo() {
+        return "\nThese are the confirmed Details for above booked seat\n" + "Name: " + name + "\nSurname: " + surname + "\nEmail: " + email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
-
-
-
-
-
-
-
-
