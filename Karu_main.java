@@ -364,8 +364,87 @@ public class MainK {
             }
         }
     }
-
-
-
-
 }
+
+class Ticket{
+
+    private String row;
+    private int seat;
+    private int price;
+    private Person person;
+
+    public Ticket(String row,int seat, int price,Person customer){
+        this.row = row;
+        this.seat = seat;
+        this.price = price;
+        person = customer;
+    }
+    public String getRow(){
+        return row;
+    }
+    public void setRow(String Letter){
+        this.row=Letter;
+    }
+    public Person getPerson(){
+        return  person;
+    }
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+    public int getSeat(){
+        return seat;
+    }
+    public void setSeat(int number) {
+        this.seat = number;
+    }
+    public int getPrice(){
+        return price;
+    }
+    public void setPrice(int seatPrices) {
+        this.price = seatPrices;
+    }
+
+    public void ticketInfo(){
+        System.out.println("Seat: " + getRow()+getSeat()+" cost: " + getPrice());
+        person.personalInfo();
+    }
+}
+
+class Person{
+    private String name;
+    private String surname;
+    private String email;
+
+    public Person(String name, String surname, String email){
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+    }
+    public String getName(){
+        return name;
+    }
+
+    public void setName(String name){
+        this.name=name;
+    }
+
+    public String getSurname(){
+        return surname;
+    }
+    public void setSurname(String surname){
+        this.surname=surname;
+    }
+    public String getEmail(){
+        return email;
+    }
+    public void setEmail(String email){
+        this.email=email;
+    }
+    public void personalInfo(){
+        System.out.println("Name: "+ getName());
+        System.out.println("Surname: "+ getSurname());
+        System.out.println("E-mail: "+ getEmail());
+    }
+}
+
+
